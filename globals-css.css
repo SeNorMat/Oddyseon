@@ -1,0 +1,115 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+ 
+@layer base {
+  :root {
+    --background: 228 20% 7%;
+    --foreground: 210 40% 98%;
+    
+    --card: 222 18% 15%;
+    --card-foreground: 210 40% 98%;
+ 
+    --popover: 222 18% 15%;
+    --popover-foreground: 210 40% 98%;
+ 
+    --primary: 142 88% 50%;
+    --primary-foreground: 0 0% 100%;
+ 
+    --secondary: 166 100% 46%;
+    --secondary-foreground: 0 0% 100%;
+ 
+    --muted: 217 19% 27%;
+    --muted-foreground: 215 20% 65%;
+ 
+    --accent: 285 100% 39%;
+    --accent-foreground: 0 0% 100%;
+ 
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+ 
+    --border: 217 19% 27%;
+    --input: 217 19% 27%;
+    --ring: 142 88% 50%;
+ 
+    --radius: 0.5rem;
+  }
+ 
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-text-primary;
+    background-image: radial-gradient(ellipse at top, rgba(27, 34, 48, 0.7), rgba(11, 15, 25, 1) 70%);
+    min-height: 100vh;
+  }
+  
+  /* Custom scrollbar for the aurora theme */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-surface;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-aurora-green;
+  }
+}
+
+@layer components {
+  .aurora-glow {
+    @apply relative;
+  }
+  
+  .aurora-glow::before {
+    content: '';
+    @apply absolute -inset-[1px] bg-aurora-gradient rounded-lg blur-sm opacity-70 transition-opacity duration-200;
+    z-index: -1;
+  }
+  
+  .aurora-glow:hover::before {
+    @apply opacity-100;
+  }
+  
+  .card-hover {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-aurora;
+  }
+  
+  .space-dot {
+    @apply absolute rounded-full bg-white opacity-70;
+    box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.5);
+  }
+  
+  /* Card for the dark space theme */
+  .space-card {
+    @apply relative overflow-hidden rounded-xl backdrop-blur-sm border border-slate-700;
+    background: rgba(27, 34, 48, 0.8);
+  }
+  
+  /* Custom animated button style */
+  .btn-aurora {
+    @apply relative px-5 py-2 font-medium text-white rounded-lg overflow-hidden transition-all;
+    background: linear-gradient(45deg, #14E81E, #00EA8D);
+  }
+  
+  .btn-aurora:hover {
+    @apply shadow-aurora;
+    transform: translateY(-2px);
+  }
+  
+  .btn-aurora:active {
+    transform: translateY(0);
+  }
+  
+  /* Floating animation utility class */
+  .floating {
+    animation: float 6s ease-in-out infinite;
+  }
+}

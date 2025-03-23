@@ -1,0 +1,376 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Search, Filter, Bookmark, GraduationCap, Zap, Clock, Users, ArrowUpDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import CourseCard from '@/components/courses/course-card';
+
+// Mock data for courses
+const mockCourses = [
+  {
+    id: '1',
+    title: 'Crypto Trading 101',
+    description: 'Learn the fundamentals of cryptocurrency trading, from basic concepts to technical analysis.',
+    image: '/images/courses/crypto-trading.jpg',
+    level: 'beginner',
+    duration: '4 weeks',
+    lessonsCount: 12,
+    studentsCount: 1245,
+    rating: 4.7,
+    instructor: 'Alex Morgan',
+    tags: ['crypto', 'trading', 'fundamentals'],
+    category: 'trading',
+    progress: 65,
+    isBookmarked: true,
+    isFeatured: true,
+  },
+  {
+    id: '2',
+    title: 'DeFi Fundamentals',
+    description: 'Explore decentralized finance protocols, yield farming, liquidity pools, and more.',
+    image: '/images/courses/defi.jpg',
+    level: 'intermediate',
+    duration: '3 weeks',
+    lessonsCount: 10,
+    studentsCount: 875,
+    rating: 4.5,
+    instructor: 'Sophia Chen',
+    tags: ['defi', 'yield farming', 'liquidity'],
+    category: 'defi',
+    progress: 30,
+    isBookmarked: false,
+    isFeatured: false,
+  },
+  {
+    id: '3',
+    title: 'Technical Analysis Masterclass',
+    description: 'Advanced chart patterns, indicators, and strategies for cryptocurrency markets.',
+    image: '/images/courses/technical-analysis.jpg',
+    level: 'advanced',
+    duration: '5 weeks',
+    lessonsCount: 15,
+    studentsCount: 690,
+    rating: 4.8,
+    instructor: 'Michael Johnson',
+    tags: ['technical analysis', 'charts', 'patterns'],
+    category: 'trading',
+    progress: 15,
+    isBookmarked: true,
+    isFeatured: true,
+  },
+  {
+    id: '4',
+    title: 'Blockchain Fundamentals',
+    description: 'Understanding blockchain technology, consensus mechanisms, and cryptography basics.',
+    image: '/images/courses/blockchain.jpg',
+    level: 'beginner',
+    duration: '2 weeks',
+    lessonsCount: 8,
+    studentsCount: 1580,
+    rating: 4.6,
+    instructor: 'Emma Wilson',
+    tags: ['blockchain', 'consensus', 'cryptography'],
+    category: 'technology',
+    progress: 0,
+    isBookmarked: false,
+    isFeatured: false,
+  },
+  {
+    id: '5',
+    title: 'NFT Creation and Marketing',
+    description: 'Create, mint, and market your own NFT collection with practical step-by-step guidance.',
+    image: '/images/courses/nft.jpg',
+    level: 'intermediate',
+    duration: '3 weeks',
+    lessonsCount: 11,
+    studentsCount: 725,
+    rating: 4.4,
+    instructor: 'David Park',
+    tags: ['nft', 'digital art', 'marketing'],
+    category: 'nft',
+    progress: 0,
+    isBookmarked: false,
+    isFeatured: false,
+  },
+  {
+    id: '6',
+    title: 'Crypto Risk Management',
+    description: 'Learn how to protect your portfolio with advanced risk management techniques.',
+    image: '/images/courses/risk-management.jpg',
+    level: 'advanced',
+    duration: '2 weeks',
+    lessonsCount: 9,
+    studentsCount: 520,
+    rating: 4.9,
+    instructor: 'Sarah Lewis',
+    tags: ['risk management', 'portfolio', 'strategy'],
+    category: 'trading',
+    progress: 0,
+    isBookmarked: false,
+    isFeatured: true,
+  },
+  {
+    id: '7',
+    title: 'Metaverse Economy',
+    description: 'Explore virtual economies, digital land, and investment opportunities in the metaverse.',
+    image: '/images/courses/metaverse.jpg',
+    level: 'intermediate',
+    duration: '4 weeks',
+    lessonsCount: 12,
+    studentsCount: 405,
+    rating: 4.3,
+    instructor: 'James Walker',
+    tags: ['metaverse', 'virtual worlds', 'digital economy'],
+    category: 'metaverse',
+    progress: 0,
+    isBookmarked: false,
+    isFeatured: false,
+  },
+  {
+    id: '8',
+    title: 'Crypto Taxation Essentials',
+    description: 'Understanding tax implications of cryptocurrency trading, mining, and staking.',
+    image: '/images/courses/taxation.jpg',
+    level: 'beginner',
+    duration: '2 weeks',
+    lessonsCount: 7,
+    studentsCount: 830,
+    rating: 4.5,
+    instructor: 'Rebecca Turner',
+    tags: ['taxation', 'compliance', 'reporting'],
+    category: 'finance',
+    progress: 0,
+    isBookmarked: false,
+    isFeatured: false,
+  },
+];
+
+export default function CoursesPage() {
+  const [courses, setCourses] = useState(mockCourses);
+  const [filteredCourses, setFilteredCourses] = useState(mockCourses);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('all');
+  const [filterLevel, setFilterLevel] = useState('all');
+  const [sortBy, setSortBy] = useState('featured');
+
+  // Filter courses based on search, tab, and level
+  useEffect(() => {
+    let result = [...courses];
+    
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(course => 
+        course.title.toLowerCase().includes(query) || 
+        course.description.toLowerCase().includes(query) ||
+        course.tags.some(tag => tag.toLowerCase().includes(query))
+      );
+    }
+    
+    // Tab filter
+    if (activeTab !== 'all') {
+      if (activeTab === 'my-courses') {
+        result = result.filter(course => course.progress > 0);
+      } else if (activeTab === 'bookmarked') {
+        result = result.filter(course => course.isBookmarked);
+      } else if (activeTab === 'featured') {
+        result = result.filter(course => course.isFeatured);
+      }
+    }
+    
+    // Level filter
+    if (filterLevel !== 'all') {
+      result = result.filter(course => course.level === filterLevel);
+    }
+    
+    // Sorting
+    result = result.sort((a, b) => {
+      switch (sortBy) {
+        case 'featured':
+          return (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0);
+        case 'newest':
+          // For mock data, we'll just use the id as a proxy for "newest"
+          return Number(b.id) - Number(a.id);
+        case 'popular':
+          return b.studentsCount - a.studentsCount;
+        case 'rating':
+          return b.rating - a.rating;
+        default:
+          return 0;
+      }
+    });
+    
+    setFilteredCourses(result);
+  }, [courses, searchQuery, activeTab, filterLevel, sortBy]);
+
+  // Toggle bookmark status
+  const toggleBookmark = (courseId: string) => {
+    setCourses(courses.map(course => 
+      course.id === courseId 
+        ? { ...course, isBookmarked: !course.isBookmarked } 
+        : course
+    ));
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex flex-col gap-4">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <h1 className="text-3xl font-bold mb-2">Courses Library</h1>
+          <p className="text-text-secondary">
+            Expand your knowledge with our comprehensive courses
+          </p>
+        </motion.div>
+        
+        {/* Search and filters */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-grow">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted h-4 w-4" />
+            <Input
+              placeholder="Search courses, topics, instructors..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <div className="flex gap-2">
+            <div className="relative">
+              <Button 
+                variant="outline" 
+                className="min-w-[120px] justify-between"
+                onClick={() => document.getElementById('level-filter')?.click()}
+              >
+                <span>Level: {filterLevel === 'all' ? 'All' : filterLevel.charAt(0).toUpperCase() + filterLevel.slice(1)}</span>
+                <Filter className="h-4 w-4 ml-2" />
+              </Button>
+              <select
+                id="level-filter"
+                value={filterLevel}
+                onChange={(e) => setFilterLevel(e.target.value)}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              >
+                <option value="all">All Levels</option>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+              </select>
+            </div>
+            
+            <div className="relative">
+              <Button 
+                variant="outline" 
+                className="min-w-[120px] justify-between"
+                onClick={() => document.getElementById('sort-filter')?.click()}
+              >
+                <span>Sort: {sortBy.charAt(0).toUpperCase() + sortBy.slice(1)}</span>
+                <ArrowUpDown className="h-4 w-4 ml-2" />
+              </Button>
+              <select
+                id="sort-filter"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              >
+                <option value="featured">Featured</option>
+                <option value="newest">Newest</option>
+                <option value="popular">Popular</option>
+                <option value="rating">Highest Rated</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Course tabs and grid */}
+      <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-8">
+          <TabsTrigger value="all" className="flex gap-2">
+            <GraduationCap className="h-4 w-4" />
+            <span>All Courses</span>
+          </TabsTrigger>
+          <TabsTrigger value="featured" className="flex gap-2">
+            <Zap className="h-4 w-4" />
+            <span>Featured</span>
+          </TabsTrigger>
+          <TabsTrigger value="my-courses" className="flex gap-2">
+            <Clock className="h-4 w-4" />
+            <span>In Progress</span>
+          </TabsTrigger>
+          <TabsTrigger value="bookmarked" className="flex gap-2">
+            <Bookmark className="h-4 w-4" />
+            <span>Bookmarked</span>
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value={activeTab} className="space-y-8">
+          {/* Results count */}
+          <div className="flex justify-between items-center">
+            <p className="text-text-secondary">
+              Showing <span className="font-medium text-text-primary">{filteredCourses.length}</span> courses
+            </p>
+            
+            {filterLevel !== 'all' || searchQuery || activeTab !== 'all' ? (
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => {
+                  setSearchQuery('');
+                  setActiveTab('all');
+                  setFilterLevel('all');
+                }}
+              >
+                Clear filters
+              </Button>
+            ) : null}
+          </div>
+          
+          {/* Course grid */}
+          {filteredCourses.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredCourses.map((course) => (
+                <motion.div
+                  key={course.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <CourseCard
+                    course={course}
+                    onBookmarkToggle={() => toggleBookmark(course.id)}
+                  />
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                <Search className="h-8 w-8 text-text-muted" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">No courses found</h3>
+              <p className="text-text-secondary max-w-md mb-6">
+                We couldn't find any courses matching your current filters. Try adjusting your search criteria.
+              </p>
+              <Button
+                onClick={() => {
+                  setSearchQuery('');
+                  setActiveTab('all');
+                  setFilterLevel('all');
+                }}
+              >
+                Reset Filters
+              </Button>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}

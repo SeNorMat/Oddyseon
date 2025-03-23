@@ -1,0 +1,703 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { ArrowLeft, Bookmark, Clock, BookOpen, Users, Star, Award, PlayCircle, Check, Sparkles, LockKeyhole, Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { getInitials } from '@/lib/utils';
+
+// Mock data for course details
+const getCourseDetails = (id: string) => {
+  // In a real app, we would fetch this from an API
+  return {
+    id,
+    title: 'Crypto Trading 101',
+    description: 'Learn the fundamentals of cryptocurrency trading, from basic concepts to advanced technical analysis. This comprehensive course will take you from a complete beginner to a confident trader with practical examples and real-world case studies.',
+    longDescription: `<p>Welcome to <strong>Crypto Trading 101</strong>, your comprehensive guide to navigating the exciting world of cryptocurrency markets with confidence and skill.</p>
+    <p>This course is designed for beginners who want to understand how cryptocurrency trading works and develop the skills needed to make informed trading decisions. You'll learn everything from setting up your first wallet to analyzing complex chart patterns.</p>
+    <p>Through a combination of theory, practical examples, and real-world case studies, you'll gain both the knowledge and experience needed to start your trading journey on the right foot.</p>`,
+    image: '/images/courses/crypto-trading.jpg',
+    level: 'beginner',
+    duration: '4 weeks',
+    lessonsCount: 12,
+    studentsCount: 1245,
+    rating: 4.7,
+    reviews: 128,
+    instructor: {
+      name: 'Alex Morgan',
+      role: 'Senior Crypto Analyst',
+      image: '/images/instructors/alex-morgan.jpg',
+      bio: 'Alex has been trading cryptocurrencies since 2015 and has helped over 10,000 students understand the markets. Previously worked as a quantitative analyst at a major trading firm.',
+    },
+    tags: ['crypto', 'trading', 'fundamentals', 'technical analysis'],
+    category: 'trading',
+    progress: 65,
+    isBookmarked: true,
+    isFeatured: true,
+    lastUpdated: '2023-10-15',
+    whatYouWillLearn: [
+      'Understand the basics of blockchain and cryptocurrency',
+      'Set up secure wallets and exchange accounts',
+      'Read and interpret price charts and key indicators',
+      'Develop effective risk management strategies',
+      'Identify profitable trading opportunities',
+      'Build and test your own trading plans',
+      'Avoid common pitfalls that new traders make',
+      'Track and optimize your performance over time',
+    ],
+    requirements: [
+      'No prior trading experience needed',
+      'Basic computer skills',
+      'Interest in financial markets and cryptocurrencies',
+    ],
+    modules: [
+      {
+        id: 'module-1',
+        title: 'Getting Started with Cryptocurrency',
+        description: 'Introduction to blockchain, cryptocurrencies, and setting up your trading environment.',
+        lessons: [
+          {
+            id: 'lesson-1-1',
+            title: 'Introduction to Blockchain Technology',
+            duration: '15 mins',
+            isCompleted: true,
+            isLocked: false,
+          },
+          {
+            id: 'lesson-1-2',
+            title: 'Understanding Bitcoin and Altcoins',
+            duration: '20 mins',
+            isCompleted: true,
+            isLocked: false,
+          },
+          {
+            id: 'lesson-1-3',
+            title: 'Setting Up Your First Wallet',
+            duration: '25 mins',
+            isCompleted: true,
+            isLocked: false,
+          },
+        ],
+      },
+      {
+        id: 'module-2',
+        title: 'Trading Fundamentals',
+        description: 'Learn the core concepts of trading, order types, and basic market analysis.',
+        lessons: [
+          {
+            id: 'lesson-2-1',
+            title: 'Understanding Market Basics',
+            duration: '18 mins',
+            isCompleted: true,
+            isLocked: false,
+          },
+          {
+            id: 'lesson-2-2',
+            title: 'Order Types and Execution',
+            duration: '22 mins',
+            isCompleted: true,
+            isLocked: false,
+          },
+          {
+            id: 'lesson-2-3',
+            title: 'Introduction to Technical Analysis',
+            duration: '30 mins',
+            isCompleted: true,
+            isLocked: false,
+          },
+          {
+            id: 'lesson-2-4',
+            title: 'Fundamental Analysis for Crypto',
+            duration: '28 mins',
+            isCompleted: true,
+            isLocked: false,
+          },
+        ],
+      },
+      {
+        id: 'module-3',
+        title: 'Chart Patterns and Indicators',
+        description: 'Dive deeper into technical analysis with advanced chart patterns and indicators.',
+        lessons: [
+          {
+            id: 'lesson-3-1',
+            title: 'Support and Resistance Levels',
+            duration: '24 mins',
+            isCompleted: true,
+            isLocked: false,
+          },
+          {
+            id: 'lesson-3-2',
+            title: 'Trend Lines and Channels',
+            duration: '20 mins',
+            isCompleted: false,
+            isLocked: false,
+          },
+          {
+            id: 'lesson-3-3',
+            title: 'Moving Averages and MACD',
+            duration: '26 mins',
+            isCompleted: false,
+            isLocked: false,
+          },
+          {
+            id: 'lesson-3-4',
+            title: 'RSI, Stochastic, and Other Oscillators',
+            duration: '22 mins',
+            isCompleted: false,
+            isLocked: false,
+          },
+        ],
+      },
+      {
+        id: 'module-4',
+        title: 'Risk Management and Trading Psychology',
+        description: 'Essential strategies for managing risk and maintaining the right trading mindset.',
+        lessons: [
+          {
+            id: 'lesson-4-1',
+            title: 'Position Sizing and Risk-Reward Ratios',
+            duration: '25 mins',
+            isCompleted: false,
+            isLocked: true,
+          },
+          {
+            id: 'lesson-4-2',
+            title: 'Stop Loss and Take Profit Strategies',
+            duration: '22 mins',
+            isCompleted: false,
+            isLocked: true,
+          },
+          {
+            id: 'lesson-4-3',
+            title: 'Emotional Control in Trading',
+            duration: '18 mins',
+            isCompleted: false,
+            isLocked: true,
+          },
+          {
+            id: 'lesson-4-4',
+            title: 'Building and Testing Your Trading Plan',
+            duration: '30 mins',
+            isCompleted: false,
+            isLocked: true,
+          },
+        ],
+      },
+    ],
+  };
+};
+
+export default function CourseDetailPage({ params }: { params: { courseId: string } }) {
+  const router = useRouter();
+  const [course, setCourse] = useState<any>(null);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [loading, setLoading] = useState(true);
+
+  // Placeholder image for development
+  const placeholderImageUrl = "https://via.placeholder.com/1200x600";
+
+  useEffect(() => {
+    // Simulate loading course data
+    const loadCourse = async () => {
+      setLoading(true);
+      try {
+        // In a real app, you would fetch this from an API
+        const courseData = getCourseDetails(params.courseId);
+        setCourse(courseData);
+        setIsBookmarked(courseData.isBookmarked);
+      } catch (error) {
+        console.error('Failed to load course:', error);
+        // Handle error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCourse();
+  }, [params.courseId]);
+
+  const toggleBookmark = () => {
+    setIsBookmarked(!isBookmarked);
+    // In a real app, you would send this to an API
+  };
+
+  const startCourse = () => {
+    // Find the first incomplete lesson
+    let nextLessonId = '';
+    
+    for (const module of course.modules) {
+      for (const lesson of module.lessons) {
+        if (!lesson.isCompleted) {
+          nextLessonId = lesson.id;
+          break;
+        }
+      }
+      if (nextLessonId) break;
+    }
+    
+    // If all lessons are completed, start the first lesson
+    if (!nextLessonId && course.modules.length > 0 && course.modules[0].lessons.length > 0) {
+      nextLessonId = course.modules[0].lessons[0].id;
+    }
+    
+    if (nextLessonId) {
+      router.push(`/courses/${params.courseId}/lesson/${nextLessonId}`);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 w-64 bg-muted rounded-md"></div>
+          <div className="h-6 w-48 bg-muted rounded-md"></div>
+          <div className="h-24 w-96 bg-muted rounded-md"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!course) {
+    return (
+      <div className="text-center py-12">
+        <h1 className="text-2xl font-bold mb-4">Course Not Found</h1>
+        <p className="text-text-secondary mb-6">
+          The course you're looking for doesn't exist or has been removed.
+        </p>
+        <Link href="/courses">
+          <Button>Back to Courses</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  // Calculate progress stats
+  const completedLessons = course.modules.reduce(
+    (total: number, module: any) => total + module.lessons.filter((lesson: any) => lesson.isCompleted).length,
+    0
+  );
+  const totalLessons = course.modules.reduce(
+    (total: number, module: any) => total + module.lessons.length,
+    0
+  );
+  const progressPercentage = Math.round((completedLessons / totalLessons) * 100);
+
+  return (
+    <div className="space-y-8">
+      {/* Back button */}
+      <div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-text-secondary mb-6"
+          onClick={() => router.back()}
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Courses
+        </Button>
+      </div>
+      
+      {/* Course header */}
+      <div className="relative rounded-2xl overflow-hidden">
+        {/* Cover image with gradient overlay */}
+        <div className="relative h-64 md:h-80">
+          <Image
+            src={placeholderImageUrl}
+            alt={course.title}
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background opacity-90"></div>
+        </div>
+        
+        <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            {/* Level badge */}
+            <Badge className="mb-4 bg-aurora-blue/20 text-aurora-blue hover:bg-aurora-blue/30">
+              {course.level.charAt(0).toUpperCase() + course.level.slice(1)}
+            </Badge>
+            
+            {/* Title */}
+            <h1 className="text-3xl md:text-4xl font-bold mb-4 text-white">{course.title}</h1>
+            
+            {/* Course metadata */}
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-6 text-sm text-text-secondary">
+              <div className="flex items-center">
+                <Clock className="h-4 w-4 mr-1" />
+                <span>{course.duration}</span>
+              </div>
+              <div className="flex items-center">
+                <BookOpen className="h-4 w-4 mr-1" />
+                <span>{course.lessonsCount} lessons</span>
+              </div>
+              <div className="flex items-center">
+                <Users className="h-4 w-4 mr-1" />
+                <span>{course.studentsCount.toLocaleString()} students</span>
+              </div>
+              <div className="flex items-center text-amber-400">
+                <Star className="h-4 w-4 fill-amber-400 mr-1" />
+                <span>{course.rating.toFixed(1)}</span>
+                <span className="text-text-secondary ml-1">({course.reviews} reviews)</span>
+              </div>
+            </div>
+            
+            {/* Instructor */}
+            <div className="flex items-center">
+              <Avatar className="h-10 w-10 mr-3 border-2 border-background">
+                <AvatarImage src={course.instructor.image} alt={course.instructor.name} />
+                <AvatarFallback className="bg-muted">
+                  {getInitials(course.instructor.name)}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-medium text-white">{course.instructor.name}</p>
+                <p className="text-sm text-text-secondary">{course.instructor.role}</p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+      
+      {/* Action buttons */}
+      <div className="flex flex-col sm:flex-row justify-between gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Button
+            size="lg" 
+            className="bg-aurora-gradient hover:shadow-aurora"
+            onClick={startCourse}
+          >
+            {course.progress > 0 ? 'Continue Course' : 'Start Course'}
+            <PlayCircle className="ml-2 h-5 w-5" />
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            size="lg"
+            onClick={toggleBookmark}
+          >
+            <Bookmark 
+              className={`mr-2 h-5 w-5 ${isBookmarked ? 'fill-aurora-blue text-aurora-blue' : ''}`} 
+            />
+            {isBookmarked ? 'Bookmarked' : 'Bookmark'}
+          </Button>
+        </div>
+        
+        {course.progress > 0 && (
+          <div className="flex items-center gap-3 bg-muted p-3 rounded-lg">
+            <div className="flex-1 min-w-[150px]">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-sm font-medium">Your Progress</span>
+                <span className="text-sm text-text-secondary">{progressPercentage}%</span>
+              </div>
+              <Progress value={progressPercentage} className="h-2" />
+            </div>
+            <div className="text-xs text-text-secondary whitespace-nowrap">
+              {completedLessons}/{totalLessons} lessons
+            </div>
+          </div>
+        )}
+      </div>
+      
+      {/* Course content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+          <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-6">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="curriculum">Curriculum</TabsTrigger>
+              <TabsTrigger value="instructor">Instructor</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="overview" className="space-y-8">
+              {/* Description */}
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold">About This Course</h2>
+                <div 
+                  className="text-text-secondary space-y-4"
+                  dangerouslySetInnerHTML={{ __html: course.longDescription }}
+                />
+              </div>
+              
+              {/* What you will learn */}
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold">What You Will Learn</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {course.whatYouWillLearn.map((item: string, index: number) => (
+                    <div key={index} className="flex items-start">
+                      <Check className="h-5 w-5 text-aurora-green mr-2 flex-shrink-0 mt-0.5" />
+                      <span className="text-text-secondary">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Requirements */}
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold">Requirements</h2>
+                <ul className="list-disc list-inside text-text-secondary space-y-1 ml-2">
+                  {course.requirements.map((item: string, index: number) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="curriculum" className="space-y-6">
+              <h2 className="text-2xl font-bold">Course Curriculum</h2>
+              <div className="space-y-6">
+                {course.modules.map((module: any, index: number) => (
+                  <Card key={module.id} className="space-card overflow-hidden">
+                    <div className="p-4 bg-muted/30">
+                      <h3 className="font-bold text-lg">
+                        Module {index + 1}: {module.title}
+                      </h3>
+                      <p className="text-text-secondary text-sm mt-1">
+                        {module.description}
+                      </p>
+                    </div>
+                    <CardContent className="p-0">
+                      <div className="divide-y divide-border">
+                        {module.lessons.map((lesson: any) => (
+                          <div 
+                            key={lesson.id}
+                            className={`p-4 flex items-center justify-between transition-colors ${
+                              lesson.isLocked 
+                                ? 'opacity-70' 
+                                : 'hover:bg-muted/30 cursor-pointer'
+                            }`}
+                            onClick={() => {
+                              if (!lesson.isLocked) {
+                                router.push(`/courses/${params.courseId}/lesson/${lesson.id}`);
+                              }
+                            }}
+                          >
+                            <div className="flex items-center">
+                              <div className="mr-3">
+                                {lesson.isCompleted ? (
+                                  <div className="h-6 w-6 rounded-full bg-aurora-green/20 flex items-center justify-center">
+                                    <Check className="h-4 w-4 text-aurora-green" />
+                                  </div>
+                                ) : lesson.isLocked ? (
+                                  <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center">
+                                    <LockKeyhole className="h-4 w-4 text-text-muted" />
+                                  </div>
+                                ) : (
+                                  <div className="h-6 w-6 rounded-full border border-border flex items-center justify-center">
+                                    <PlayCircle className="h-4 w-4 text-text-muted" />
+                                  </div>
+                                )}
+                              </div>
+                              <div>
+                                <h4 className="font-medium">{lesson.title}</h4>
+                                <p className="text-sm text-text-muted flex items-center mt-1">
+                                  <Clock className="h-3 w-3 mr-1" />
+                                  {lesson.duration}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="instructor" className="space-y-6">
+              <h2 className="text-2xl font-bold">About the Instructor</h2>
+              
+              <div className="flex flex-col sm:flex-row items-start gap-6">
+                <Avatar className="h-24 w-24 border-2 border-border">
+                  <AvatarImage src={course.instructor.image} alt={course.instructor.name} />
+                  <AvatarFallback className="text-2xl">
+                    {getInitials(course.instructor.name)}
+                  </AvatarFallback>
+                </Avatar>
+                
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-xl font-bold">{course.instructor.name}</h3>
+                    <p className="text-text-secondary">{course.instructor.role}</p>
+                  </div>
+                  
+                  <p className="text-text-secondary">{course.instructor.bio}</p>
+                  
+                  <div className="flex gap-3">
+                    <Button variant="outline" size="sm">
+                      View Profile
+                    </Button>
+                    <Button variant="ghost" size="sm">
+                      Contact
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+        
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Course stats card */}
+          <Card className="space-card">
+            <CardContent className="p-5 space-y-4">
+              <h3 className="text-lg font-bold">Course Details</h3>
+              
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-text-secondary">Last updated</span>
+                  <span>{new Date(course.lastUpdated).toLocaleDateString()}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-text-secondary">Duration</span>
+                  <span>{course.duration}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-text-secondary">Lessons</span>
+                  <span>{course.lessonsCount}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-text-secondary">Level</span>
+                  <Badge variant="outline">
+                    {course.level.charAt(0).toUpperCase() + course.level.slice(1)}
+                  </Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-text-secondary">Category</span>
+                  <Badge variant="outline">
+                    {course.category.charAt(0).toUpperCase() + course.category.slice(1)}
+                  </Badge>
+                </div>
+              </div>
+              
+              <div className="pt-3 border-t border-border">
+                <Button className="w-full bg-aurora-gradient">
+                  <Download className="mr-2 h-4 w-4" />
+                  Download Resources
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Tags */}
+          <Card className="space-card">
+            <CardContent className="p-5 space-y-3">
+              <h3 className="text-lg font-bold">Tags</h3>
+              <div className="flex flex-wrap gap-2">
+                {course.tags.map((tag: string) => (
+                  <Badge key={tag} variant="secondary" className="bg-muted hover:bg-muted/80">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Related courses */}
+          <Card className="space-card">
+            <CardContent className="p-5 space-y-4">
+              <h3 className="text-lg font-bold">You Might Also Like</h3>
+              
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-16 h-12 rounded bg-muted relative overflow-hidden flex-shrink-0">
+                    {/* Placeholder image */}
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-sm">Advanced Technical Analysis</h4>
+                    <div className="flex items-center text-xs text-text-muted mt-1">
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400 mr-1" />
+                      <span>4.8</span>
+                      <span className="mx-1">•</span>
+                      <span>15 lessons</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <div className="w-16 h-12 rounded bg-muted relative overflow-hidden flex-shrink-0">
+                    {/* Placeholder image */}
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-sm">Crypto Risk Management</h4>
+                    <div className="flex items-center text-xs text-text-muted mt-1">
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400 mr-1" />
+                      <span>4.9</span>
+                      <span className="mx-1">•</span>
+                      <span>9 lessons</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <div className="w-16 h-12 rounded bg-muted relative overflow-hidden flex-shrink-0">
+                    {/* Placeholder image */}
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-sm">Blockchain Fundamentals</h4>
+                    <div className="flex items-center text-xs text-text-muted mt-1">
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400 mr-1" />
+                      <span>4.6</span>
+                      <span className="mx-1">•</span>
+                      <span>8 lessons</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="pt-2">
+                <Button variant="ghost" className="w-full text-aurora-blue" asChild>
+                  <Link href="/courses">
+                    Browse More Courses
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Certificate teaser */}
+          <Card className="relative overflow-hidden space-card">
+            <div className="absolute right-0 top-0 w-16 h-16 bg-aurora-gradient opacity-50 blur-xl rounded-full -mr-4 -mt-4"></div>
+            <div className="absolute left-0 bottom-0 w-24 h-24 bg-aurora-purple opacity-30 blur-xl rounded-full -ml-10 -mb-10"></div>
+            
+            <CardContent className="p-5 space-y-4 relative z-10">
+              <div className="flex justify-center mb-2">
+                <Sparkles className="h-10 w-10 text-aurora-blue" />
+              </div>
+              
+              <h3 className="text-center text-lg font-bold">
+                Earn a Certificate
+              </h3>
+              
+              <p className="text-sm text-text-secondary text-center">
+                Complete this course to receive a certificate of achievement to showcase your new skills.
+              </p>
+              
+              <div className="flex justify-center pt-2">
+                <div className="bg-muted/50 p-1 rounded">
+                  <Award className="h-6 w-6 text-aurora-green" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}

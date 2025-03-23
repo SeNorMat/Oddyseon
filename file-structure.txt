@@ -1,0 +1,101 @@
+odysseon/
+├── app/
+│   ├── (auth)/                          # Authentication route group
+│   │   ├── login/
+│   │   │   └── page.tsx                 # Login page
+│   │   ├── register/
+│   │   │   └── page.tsx                 # Registration page
+│   │   └── forgot-password/
+│   │       └── page.tsx                 # Password reset page
+│   ├── (dashboard)/                     # Protected route group
+│   │   ├── dashboard/                   # Dashboard home
+│   │   │   └── page.tsx
+│   │   ├── courses/
+│   │   │   ├── page.tsx                 # All courses listing
+│   │   │   └── [courseId]/              # Course detail routes
+│   │   │       ├── page.tsx             # Course overview
+│   │   │       └── lesson/[lessonId]/
+│   │   │           └── page.tsx         # Lesson content
+│   │   ├── simulations/
+│   │   │   ├── page.tsx                 # Simulator hub
+│   │   │   └── [toolId]/
+│   │   │       └── page.tsx             # Specific simulation tool
+│   │   ├── community/                   # Future community features
+│   │   │   ├── page.tsx
+│   │   │   └── trader-hub/
+│   │   │       └── page.tsx
+│   │   └── profile/
+│   │       ├── page.tsx                 # User profile
+│   │       └── settings/
+│   │           └── page.tsx             # User settings
+│   ├── api/                             # API routes
+│   │   ├── auth/
+│   │   │   └── [...nextauth]/
+│   │   │       └── route.ts
+│   │   ├── courses/
+│   │   │   └── route.ts
+│   │   ├── progress/
+│   │   │   └── route.ts
+│   │   └── user/
+│   │       └── route.ts
+│   ├── globals.css                      # Global CSS with aurora theme
+│   ├── layout.tsx                       # Root layout with providers
+│   └── page.tsx                         # Landing/home page
+├── components/                          # Shared components
+│   ├── ui/                              # ShadCN UI components
+│   │   ├── button.tsx
+│   │   ├── card.tsx
+│   │   └── ... (other shadcn components)
+│   ├── common/                          # Common components
+│   │   ├── sidebar-nav.tsx
+│   │   ├── header.tsx
+│   │   ├── footer.tsx
+│   │   ├── course-card.tsx
+│   │   ├── lesson-navigator.tsx
+│   │   ├── progress-tracker.tsx
+│   │   └── task-card.tsx
+│   ├── dashboard/                       # Dashboard-specific components
+│   │   ├── task-list.tsx
+│   │   ├── progress-widget.tsx
+│   │   └── news-feed.tsx
+│   ├── courses/                         # Course-specific components
+│   │   ├── course-grid.tsx
+│   │   ├── course-filter.tsx
+│   │   └── lesson-content.tsx
+│   ├── simulations/                     # Simulation components
+│   │   ├── trading-chart.tsx
+│   │   ├── order-form.tsx
+│   │   └── portfolio-summary.tsx
+│   └── auth/                            # Auth-related components
+│       ├── login-form.tsx
+│       ├── register-form.tsx
+│       └── forgot-password-form.tsx
+├── lib/                                 # Utility functions & helpers
+│   ├── utils.ts                         # General utilities
+│   ├── firebase/                        # Firebase setup
+│   │   ├── config.ts
+│   │   ├── auth.ts
+│   │   └── db.ts
+│   ├── hooks/                           # Custom React hooks
+│   │   ├── use-auth.ts
+│   │   ├── use-courses.ts
+│   │   ├── use-progress.ts
+│   │   └── use-window-size.ts
+│   └── types/                           # TypeScript types/interfaces
+│       ├── course.ts
+│       ├── user.ts
+│       └── simulation.ts
+├── public/                              # Static assets
+│   ├── images/
+│   │   ├── logo.svg
+│   │   ├── aurora-bg.svg
+│   │   ├── planets/
+│   │   └── icons/
+│   └── fonts/
+├── styles/                              # Additional styles if needed
+│   └── animations.css
+├── tailwind.config.js
+├── tsconfig.json
+├── next.config.js
+├── package.json
+└── README.md

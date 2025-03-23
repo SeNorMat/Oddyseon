@@ -1,0 +1,917 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { 
+  ArrowLeft, 
+  User, 
+  Mail, 
+  Lock, 
+  Bell, 
+  Eye, 
+  EyeOff,
+  Moon,
+  Sun,
+  Globe,
+  Volume2,
+  Upload,
+  Trash2,
+  LogOut,
+  Save,
+  RefreshCw
+} from 'lucide-react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuth } from '@/lib/hooks/use-auth';
+import { Badge } from '@/components/ui/badge';
+import { toast } from '@/components/ui/use-toast';
+
+export default function SettingsPage() {
+  const router = useRouter();
+  const { user, signOut, updateUserProfile } = useAuth();
+  const [activeTab, setActiveTab] = useState('account');
+  const [loading, setLoading] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  
+  // Form states
+  const [displayName, setDisplayName] = useState(user?.displayName || '');
+  const [bio, setBio] = useState('Cryptocurrency enthusiast and trader. Learning the markets and building my knowledge base for long-term success.');
+  const [email, setEmail] = useState(user?.email || '');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  
+  // Settings states
+  const [darkMode, setDarkMode] = useState(true);
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [pushNotifications, setPushNotifications] = useState(true);
+  const [courseUpdates, setCourseUpdates] = useState(true);
+  const [marketAlerts, setMarketAlerts] = useState(true);
+  const [achievementAlerts, setAchievementAlerts] = useState(true);
+  const [soundEffects, setSoundEffects] = useState(true);
+  const [language, setLanguage] = useState('en');
+  const [timezone, setTimezone] = useState('UTC-5');
+  const [autoPlayVideos, setAutoPlayVideos] = useState(true);
+  
+  // Privacy states
+  const [publicProfile, setPublicProfile] = useState(false);
+  const [showProgress, setShowProgress] = useState(true);
+  const [showAchievements, setShowAchievements] = useState(true);
+  const [dataSharingConsent, setDataSharingConsent] = useState('minimal');
+  
+  // Get user initials for avatar fallback
+  const getInitials = (name: string) => {
+    if (!name) return "";
+    const names = name.split(' ');
+    if (names.length === 1) return names[0].charAt(0).toUpperCase();
+    return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
+  };
+  
+  // Handle profile update
+  const handleUpdateProfile = async () => {
+    setLoading(true);
+    try {
+      await updateUserProfile(displayName);
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been successfully updated.",
+      });
+    } catch (error) {
+      toast({
+        title: "Update failed",
+        description: (error as Error).message || "Failed to update profile information.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Handle password change
+  const handlePasswordChange = () => {
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Passwords don't match",
+        description: "New password and confirm password must match.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (newPassword.length < 8) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 8 characters long.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setLoading(true);
+    // Here you would implement the actual password change logic with Firebase
+    setTimeout(() => {
+      setLoading(false);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      toast({
+        title: "Password updated",
+        description: "Your password has been successfully changed.",
+      });
+    }, 1000);
+  };
+  
+  // Handle save settings
+  const handleSaveSettings = () => {
+    setLoading(true);
+    // In a real app, you would save to backend/database
+    setTimeout(() => {
+      setLoading(false);
+      toast({
+        title: "Settings saved",
+        description: "Your preferences have been successfully updated.",
+      });
+    }, 1000);
+  };
+  
+  // Handle account deletion
+  const handleDeleteAccount = () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently removed."
+    );
+    
+    if (confirmed) {
+      setLoading(true);
+      // In a real app, you would call Firebase or your backend API to delete the account
+      setTimeout(() => {
+        setLoading(false);
+        signOut();
+        router.push('/');
+      }, 1500);
+    }
+  };
+  
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => router.back()}
+          className="rounded-full"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <h1 className="text-3xl font-bold">Settings</h1>
+          <p className="text-text-secondary">
+            Manage your account and preferences
+          </p>
+        </motion.div>
+      </div>
+      
+      {/* Settings content */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {/* Settings tabs - Sidebar on larger screens */}
+        <Card className="space-card md:row-span-2">
+          <CardContent className="p-0">
+            <Tabs 
+              orientation="vertical" 
+              value={activeTab} 
+              onValueChange={setActiveTab}
+              className="h-full"
+            >
+              <TabsList className="h-auto justify-start flex-col items-stretch p-0 bg-transparent border-r border-border">
+                <TabsTrigger 
+                  value="account" 
+                  className="justify-start p-3 data-[state=active]:bg-muted data-[state=active]:border-r-2 data-[state=active]:border-aurora-green rounded-none"
+                >
+                  <User className="h-5 w-5 mr-2" />
+                  <span>Account</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="security" 
+                  className="justify-start p-3 data-[state=active]:bg-muted data-[state=active]:border-r-2 data-[state=active]:border-aurora-green rounded-none"
+                >
+                  <Lock className="h-5 w-5 mr-2" />
+                  <span>Security</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="notifications" 
+                  className="justify-start p-3 data-[state=active]:bg-muted data-[state=active]:border-r-2 data-[state=active]:border-aurora-green rounded-none"
+                >
+                  <Bell className="h-5 w-5 mr-2" />
+                  <span>Notifications</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="appearance" 
+                  className="justify-start p-3 data-[state=active]:bg-muted data-[state=active]:border-r-2 data-[state=active]:border-aurora-green rounded-none"
+                >
+                  <Sun className="h-5 w-5 mr-2" />
+                  <span>Appearance</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="privacy" 
+                  className="justify-start p-3 data-[state=active]:bg-muted data-[state=active]:border-r-2 data-[state=active]:border-aurora-green rounded-none"
+                >
+                  <Eye className="h-5 w-5 mr-2" />
+                  <span>Privacy</span>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </CardContent>
+        </Card>
+        
+        {/* Settings content */}
+        <div className="md:col-span-3 space-y-6">
+          {/* Account settings */}
+          {activeTab === 'account' && (
+            <Card className="space-card">
+              <CardHeader>
+                <CardTitle>Account Information</CardTitle>
+                <CardDescription>
+                  Update your account information and public profile
+                </CardDescription>
+              </CardHeader>
+              
+              <CardContent className="space-y-6">
+                {/* Profile picture */}
+                <div className="flex flex-col sm:flex-row gap-6 items-center">
+                  <div className="relative">
+                    <Avatar className="h-20 w-20">
+                      <AvatarImage src={user?.photoURL || undefined} />
+                      <AvatarFallback className="text-xl bg-muted">
+                        {getInitials(displayName)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <Button 
+                      size="icon" 
+                      variant="secondary" 
+                      className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full"
+                    >
+                      <Upload className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <h4 className="font-medium">Profile Picture</h4>
+                    <p className="text-sm text-text-secondary">
+                      JPG, GIF or PNG. Max size of 2MB.
+                    </p>
+                    <div className="flex gap-2 mt-2">
+                      <Button size="sm" variant="outline">
+                        Change Picture
+                      </Button>
+                      <Button size="sm" variant="destructive">
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                
+                <Separator />
+                
+                {/* Personal info form */}
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="displayName">Display Name</Label>
+                      <Input 
+                        id="displayName" 
+                        value={displayName} 
+                        onChange={e => setDisplayName(e.target.value)}
+                        placeholder="Your name"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email Address</Label>
+                      <Input 
+                        id="email" 
+                        type="email" 
+                        value={email} 
+                        onChange={e => setEmail(e.target.value)}
+                        placeholder="your.email@example.com"
+                        disabled
+                      />
+                      <p className="text-xs text-text-muted">
+                        To change your email, please contact support.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="bio">Bio</Label>
+                    <Textarea 
+                      id="bio" 
+                      value={bio} 
+                      onChange={e => setBio(e.target.value)}
+                      placeholder="Write a short bio about yourself"
+                      className="min-h-24"
+                    />
+                    <p className="text-xs text-text-muted">
+                      Brief description for your profile. Maximum 200 characters.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+              
+              <CardFooter className="flex justify-between border-t border-border pt-6">
+                <Button variant="outline" onClick={() => router.back()}>
+                  Cancel
+                </Button>
+                <Button onClick={handleUpdateProfile} disabled={loading}>
+                  {loading ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Changes
+                    </>
+                  )}
+                </Button>
+              </CardFooter>
+            </Card>
+          )}
+          
+          {/* Security settings */}
+          {activeTab === 'security' && (
+            <div className="space-y-6">
+              <Card className="space-card">
+                <CardHeader>
+                  <CardTitle>Change Password</CardTitle>
+                  <CardDescription>
+                    Update your password to keep your account secure
+                  </CardDescription>
+                </CardHeader>
+                
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="currentPassword">Current Password</Label>
+                    <div className="relative">
+                      <Input 
+                        id="currentPassword" 
+                        type={passwordVisible ? "text" : "password"}
+                        value={currentPassword} 
+                        onChange={e => setCurrentPassword(e.target.value)}
+                        placeholder="Enter your current password"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        type="button"
+                        className="absolute right-0 top-0 h-full px-3 text-text-muted hover:text-text-primary"
+                        onClick={() => setPasswordVisible(!passwordVisible)}
+                      >
+                        {passwordVisible ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="newPassword">New Password</Label>
+                    <div className="relative">
+                      <Input 
+                        id="newPassword" 
+                        type={passwordVisible ? "text" : "password"}
+                        value={newPassword} 
+                        onChange={e => setNewPassword(e.target.value)}
+                        placeholder="Enter your new password"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        type="button"
+                        className="absolute right-0 top-0 h-full px-3 text-text-muted hover:text-text-primary"
+                        onClick={() => setPasswordVisible(!passwordVisible)}
+                      >
+                        {passwordVisible ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                    <div className="relative">
+                      <Input 
+                        id="confirmPassword" 
+                        type={passwordVisible ? "text" : "password"}
+                        value={confirmPassword} 
+                        onChange={e => setConfirmPassword(e.target.value)}
+                        placeholder="Confirm your new password"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        type="button"
+                        className="absolute right-0 top-0 h-full px-3 text-text-muted hover:text-text-primary"
+                        onClick={() => setPasswordVisible(!passwordVisible)}
+                      >
+                        {passwordVisible ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-muted/50 p-3 rounded-md text-sm">
+                    <p className="font-medium mb-1">Password requirements:</p>
+                    <ul className="list-disc list-inside text-text-secondary space-y-1">
+                      <li>Minimum 8 characters</li>
+                      <li>At least one uppercase letter</li>
+                      <li>At least one number</li>
+                      <li>Avoid common passwords and personal information</li>
+                    </ul>
+                  </div>
+                </CardContent>
+                
+                <CardFooter className="flex justify-end border-t border-border pt-6">
+                  <Button 
+                    onClick={handlePasswordChange} 
+                    disabled={loading || !currentPassword || !newPassword || !confirmPassword}
+                  >
+                    {loading ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        Updating...
+                      </>
+                    ) : (
+                      'Update Password'
+                    )}
+                  </Button>
+                </CardFooter>
+              </Card>
+              
+              <Card className="space-card">
+                <CardHeader>
+                  <CardTitle>Security Settings</CardTitle>
+                  <CardDescription>
+                    Manage your account security preferences
+                  </CardDescription>
+                </CardHeader>
+                
+                <CardContent className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <div className="font-medium">Two-Factor Authentication</div>
+                      <div className="text-sm text-text-secondary">
+                        Add an extra layer of security to your account
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline">Coming Soon</Badge>
+                      <Switch disabled />
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <div className="font-medium">Login History</div>
+                      <div className="text-sm text-text-secondary">
+                        View recent login activity for your account
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      View History
+                    </Button>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <div className="font-medium">Connected Devices</div>
+                      <div className="text-sm text-text-secondary">
+                        Manage devices that have access to your account
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      Manage Devices
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="space-card bg-muted/20 border-destructive/30">
+                <CardHeader>
+                  <CardTitle className="text-destructive">Danger Zone</CardTitle>
+                  <CardDescription>
+                    Actions that will permanently affect your account
+                  </CardDescription>
+                </CardHeader>
+                
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <div className="font-medium">Delete Account</div>
+                      <div className="text-sm text-text-secondary">
+                        Permanently delete your account and all your data
+                      </div>
+                    </div>
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={handleDeleteAccount}
+                    >
+                      Delete Account
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+          
+          {/* Notification settings */}
+          {activeTab === 'notifications' && (
+            <Card className="space-card">
+              <CardHeader>
+                <CardTitle>Notification Settings</CardTitle>
+                <CardDescription>
+                  Manage how you receive notifications from Odysseon
+                </CardDescription>
+              </CardHeader>
+              
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="font-medium">Email Notifications</div>
+                    <Switch 
+                      checked={emailNotifications} 
+                      onCheckedChange={setEmailNotifications} 
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="font-medium">Push Notifications</div>
+                    <Switch 
+                      checked={pushNotifications} 
+                      onCheckedChange={setPushNotifications} 
+                    />
+                  </div>
+                </div>
+                
+                <Separator />
+                
+                <div>
+                  <h3 className="font-medium mb-3">Notification Preferences</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <div className="text-sm font-medium">Course Updates</div>
+                        <div className="text-xs text-text-secondary">
+                          New lessons, content updates, and course releases
+                        </div>
+                      </div>
+                      <Switch 
+                        checked={courseUpdates} 
+                        onCheckedChange={setCourseUpdates}
+                        disabled={!emailNotifications && !pushNotifications}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <div className="text-sm font-medium">Market Alerts</div>
+                        <div className="text-xs text-text-secondary">
+                          Important cryptocurrency market updates and price alerts
+                        </div>
+                      </div>
+                      <Switch 
+                        checked={marketAlerts} 
+                        onCheckedChange={setMarketAlerts} 
+                        disabled={!emailNotifications && !pushNotifications}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <div className="text-sm font-medium">Achievements & Progress</div>
+                        <div className="text-xs text-text-secondary">
+                          Notifications about your learning progress and achievements
+                        </div>
+                      </div>
+                      <Switch 
+                        checked={achievementAlerts} 
+                        onCheckedChange={setAchievementAlerts}
+                        disabled={!emailNotifications && !pushNotifications}
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <Separator />
+                
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <div className="font-medium">Sound Effects</div>
+                    <div className="text-sm text-text-secondary">
+                      Enable sound for notifications and interactions
+                    </div>
+                  </div>
+                  <Switch 
+                    checked={soundEffects} 
+                    onCheckedChange={setSoundEffects} 
+                  />
+                </div>
+              </CardContent>
+              
+              <CardFooter className="flex justify-end border-t border-border pt-6">
+                <Button onClick={handleSaveSettings}>
+                  {loading ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    'Save Preferences'
+                  )}
+                </Button>
+              </CardFooter>
+            </Card>
+          )}
+          
+          {/* Appearance settings */}
+          {activeTab === 'appearance' && (
+            <Card className="space-card">
+              <CardHeader>
+                <CardTitle>Appearance Settings</CardTitle>
+                <CardDescription>
+                  Customize how Odysseon looks and behaves
+                </CardDescription>
+              </CardHeader>
+              
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <div className="font-medium">Dark Mode</div>
+                      <div className="text-sm text-text-secondary">
+                        Use dark theme for a better night-time experience
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Sun className="h-4 w-4 text-text-muted" />
+                      <Switch 
+                        checked={darkMode} 
+                        onCheckedChange={setDarkMode} 
+                      />
+                      <Moon className="h-4 w-4 text-text-primary" />
+                    </div>
+                  </div>
+                </div>
+                
+                <Separator />
+                
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="language">Language</Label>
+                    <Select value={language} onValueChange={setLanguage}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select language" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="es">Español</SelectItem>
+                        <SelectItem value="fr">Français</SelectItem>
+                        <SelectItem value="de">Deutsch</SelectItem>
+                        <SelectItem value="zh">中文</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="timezone">Timezone</Label>
+                    <Select value={timezone} onValueChange={setTimezone}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select timezone" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="UTC-8">Pacific Time (GMT-8)</SelectItem>
+                        <SelectItem value="UTC-5">Eastern Time (GMT-5)</SelectItem>
+                        <SelectItem value="UTC+0">Greenwich Mean Time (GMT)</SelectItem>
+                        <SelectItem value="UTC+1">Central European Time (GMT+1)</SelectItem>
+                        <SelectItem value="UTC+8">China Standard Time (GMT+8)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <Separator />
+                
+                <div className="space-y-4">
+                  <h3 className="font-medium">Content Preferences</h3>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <div className="text-sm font-medium">Auto-play Videos</div>
+                      <div className="text-xs text-text-secondary">
+                        Automatically play videos when viewing lessons
+                      </div>
+                    </div>
+                    <Switch 
+                      checked={autoPlayVideos} 
+                      onCheckedChange={setAutoPlayVideos} 
+                    />
+                  </div>
+                </div>
+                
+                <Separator />
+                
+                <div className="space-y-2">
+                  <h3 className="font-medium">Theme</h3>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="h-20 w-full rounded-md bg-gradient-to-b from-aurora-green to-aurora-blue relative overflow-hidden border-2 border-aurora-green">
+                        <div className="absolute top-0 left-0 w-full h-6 bg-surface opacity-70"></div>
+                      </div>
+                      <p className="text-xs font-medium">Aurora (Default)</p>
+                    </div>
+                    
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="h-20 w-full rounded-md bg-gradient-to-b from-purple-500 to-pink-500 relative overflow-hidden border border-border opacity-60">
+                        <div className="absolute top-0 left-0 w-full h-6 bg-surface opacity-70"></div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <p className="text-xs font-medium">Cosmos</p>
+                        <Badge variant="outline" className="text-[10px]">Soon</Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="h-20 w-full rounded-md bg-gradient-to-b from-blue-500 to-indigo-500 relative overflow-hidden border border-border opacity-60">
+                        <div className="absolute top-0 left-0 w-full h-6 bg-surface opacity-70"></div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <p className="text-xs font-medium">Ocean</p>
+                        <Badge variant="outline" className="text-[10px]">Soon</Badge>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+              
+              <CardFooter className="flex justify-end border-t border-border pt-6">
+                <Button onClick={handleSaveSettings}>
+                  {loading ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    'Save Preferences'
+                  )}
+                </Button>
+              </CardFooter>
+            </Card>
+          )}
+          
+          {/* Privacy settings */}
+          {activeTab === 'privacy' && (
+            <Card className="space-card">
+              <CardHeader>
+                <CardTitle>Privacy Settings</CardTitle>
+                <CardDescription>
+                  Control your privacy and data sharing preferences
+                </CardDescription>
+              </CardHeader>
+              
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <div className="font-medium">Public Profile</div>
+                      <div className="text-sm text-text-secondary">
+                        Make your profile visible to other users on the platform
+                      </div>
+                    </div>
+                    <Switch 
+                      checked={publicProfile} 
+                      onCheckedChange={setPublicProfile} 
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between pl-6">
+                    <div className="space-y-0.5">
+                      <div className="text-sm font-medium">Show Learning Progress</div>
+                      <div className="text-xs text-text-secondary">
+                        Display your course progress to other users
+                      </div>
+                    </div>
+                    <Switch 
+                      checked={showProgress} 
+                      onCheckedChange={setShowProgress}
+                      disabled={!publicProfile}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between pl-6">
+                    <div className="space-y-0.5">
+                      <div className="text-sm font-medium">Show Achievements</div>
+                      <div className="text-xs text-text-secondary">
+                        Display your badges and certificates on your public profile
+                      </div>
+                    </div>
+                    <Switch 
+                      checked={showAchievements} 
+                      onCheckedChange={setShowAchievements}
+                      disabled={!publicProfile}
+                    />
+                  </div>
+                </div>
+                
+                <Separator />
+                
+                <div className="space-y-4">
+                  <h3 className="font-medium">Data Usage & Privacy</h3>
+                  
+                  <div className="space-y-2">
+                    <Label>Data Sharing Preferences</Label>
+                    <RadioGroup value={dataSharingConsent} onValueChange={setDataSharingConsent}>
+                      <div className="flex items-start space-x-2 mb-3">
+                        <RadioGroupItem value="minimal" id="minimal" className="mt-1" />
+                        <Label htmlFor="minimal" className="flex flex-col">
+                          <span>Minimal</span>
+                          <span className="font-normal text-sm text-text-secondary">
+                            Only share essential data required for the platform to function
+                          </span>
+                        </Label>
+                      </div>
+                      
+                      <div className="flex items-start space-x-2 mb-3">
+                        <RadioGroupItem value="balanced" id="balanced" className="mt-1" />
+                        <Label htmlFor="balanced" className="flex flex-col">
+                          <span>Balanced</span>
+                          <span className="font-normal text-sm text-text-secondary">
+                            Allow data usage for personalized recommendations and platform improvements
+                          </span>
+                        </Label>
+                      </div>
+                      
+                      <div className="flex items-start space-x-2">
+                        <RadioGroupItem value="full" id="full" className="mt-1" />
+                        <Label htmlFor="full" className="flex flex-col">
+                          <span>Full</span>
+                          <span className="font-normal text-sm text-text-secondary">
+                            Allow all data usage including for marketing and product development
+                          </span>
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                </div>
+                
+                <div className="bg-muted/30 rounded-md p-4">
+                  <h4 className="font-medium mb-2">Your Privacy Rights</h4>
+                  <p className="text-sm text-text-secondary mb-4">
+                    You have the right to request a copy of your data, update your information, or request 
+                    deletion of your account and data. Please read our Privacy Policy for more details.
+                  </p>
+                  <div className="flex gap-3">
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href="#">Request Data Export</Link>
+                    </Button>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href="#">Privacy Policy</Link>
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+              
+              <CardFooter className="flex justify-end border-t border-border pt-6">
+                <Button onClick={handleSaveSettings}>
+                  {loading ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    'Save Privacy Settings'
+                  )}
+                </Button>
+              </CardFooter>
+            </Card>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
