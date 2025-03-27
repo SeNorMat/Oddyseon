@@ -1,0 +1,149 @@
+import Image from 'next/image';
+import Link from 'next/link';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/badge-component';
+import { Progress } from '@/components/ui/progress';
+import { Bookmark, BookOpen, Users, Star, ArrowRight } from 'lucide-react';
+
+interface Course {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  level: string;
+  duration: string;
+  lessonsCount: number;
+  studentsCount: number;
+  rating: number;
+  instructor: string;
+  tags: string[];
+  category: string;
+  progress: number;
+  isBookmarked: boolean;
+  isFeatured: boolean;
+}
+
+interface CourseCardProps {
+  course: Course;
+  onBookmarkToggle: () => void;
+}
+
+export default function CourseCard({ course, onBookmarkToggle }: CourseCardProps) {
+  // Use a local placeholder image instead of external service
+  const placeholderImageUrl = "/next.svg";
+  
+  // Level badge color mapping
+  const levelColors = {
+    beginner: 'bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30',
+    intermediate: 'bg-amber-500/20 text-amber-500 hover:bg-amber-500/30',
+    advanced: 'bg-red-500/20 text-red-500 hover:bg-red-500/30',
+  };
+
+  return (
+    <Card className="overflow-hidden space-card border-border group transition-all duration-300 hover:-translate-y-1 hover:shadow-aurora">
+      <div className="relative aspect-video overflow-hidden">
+        {/* Course image */}
+        <div className="absolute inset-0 bg-muted">
+          <Image
+            src={placeholderImageUrl}
+            alt={course.title}
+            width={400}
+            height={225}
+            className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+            priority={false}
+          />
+        </div>
+        
+        {/* Bookmark button */}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            onBookmarkToggle();
+          }}
+          className="absolute top-2 right-2 p-1.5 rounded-full bg-background/50 hover:bg-background/70 backdrop-blur-sm z-10 transition-colors"
+          aria-label={course.isBookmarked ? "Remove bookmark" : "Bookmark course"}
+        >
+          <Bookmark 
+            size={18} 
+            className={course.isBookmarked ? "fill-aurora-blue text-aurora-blue" : "text-white"} 
+          />
+        </button>
+        
+        {/* Featured badge */}
+        {course.isFeatured && (
+          <div className="absolute top-2 left-2 px-2 py-1 text-xs font-semibold bg-aurora-purple/90 text-white rounded-md backdrop-blur-sm z-10">
+            Featured
+          </div>
+        )}
+        
+        {/* Progress overlay (if in progress) */}
+        {course.progress > 0 && (
+          <div className="absolute bottom-0 left-0 right-0 bg-background/70 backdrop-blur-sm px-3 py-1.5 flex items-center">
+            <div className="flex-1 mr-2">
+              <Progress value={course.progress} className="h-1.5" />
+            </div>
+            <span className="text-xs font-medium">{course.progress}%</span>
+          </div>
+        )}
+      </div>
+      
+      <CardContent className="p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Badge 
+            variant="secondary" 
+            className={`text-xs font-medium ${levelColors[course.level as keyof typeof levelColors]}`}
+          >
+            {course.level.charAt(0).toUpperCase() + course.level.slice(1)}
+          </Badge>
+          
+          <div className="flex items-center text-xs text-text-secondary space-x-2">
+            <span className="flex items-center">
+              <BookOpen className="h-3 w-3 mr-1" />
+              {course.lessonsCount} lessons
+            </span>
+            <span>•</span>
+            <span>{course.duration}</span>
+          </div>
+        </div>
+        
+        <h3 className="font-semibold text-lg mb-2 line-clamp-2 min-h-[56px]">
+          {course.title}
+        </h3>
+        
+        <p className="text-sm text-text-secondary line-clamp-3 mb-3 min-h-[60px]">
+          {course.description}
+        </p>
+        
+        <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center text-text-secondary">
+            <Users className="h-4 w-4 mr-1" />
+            <span>{course.studentsCount.toLocaleString()} students</span>
+          </div>
+          
+          <div className="flex items-center text-amber-400">
+            <Star className="h-4 w-4 fill-amber-400 mr-1" />
+            <span className="font-medium">{course.rating.toFixed(1)}</span>
+          </div>
+        </div>
+      </CardContent>
+      
+      <CardFooter className="p-4 pt-0 flex justify-between items-center border-t border-border mt-3">
+        <div className="text-sm text-text-muted">
+          By <span className="text-text-secondary">{course.instructor}</span>
+        </div>
+        
+        <Link href={`/courses/${course.id}`} passHref>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="gap-1 text-aurora-blue hover:text-aurora-blue hover:bg-aurora-blue/10"
+          >
+            {course.progress > 0 ? 'Continue' : 'Start Course'}
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        </Link>
+      </CardFooter>
+    </Card>
+  );
+}

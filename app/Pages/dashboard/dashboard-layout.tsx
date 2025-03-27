@@ -1,0 +1,89 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import { useAuth } from '@/hooks/auth-hook';
+import SidebarNav from '@/components/sidebar-component';
+import Header from '@/components/header-component';
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check if user is authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  // Check window size for responsive behavior
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+      setIsSidebarOpen(window.innerWidth >= 768);
+    };
+
+    // Initial check
+    checkScreenSize();
+    
+    // Add event listener
+    window.addEventListener('resize', checkScreenSize);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  // Toggle sidebar
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="w-16 h-16 rounded-full bg-aurora-green opacity-50 animate-pulse"></div>
+          <span className="mt-4 text-text-secondary">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Protect route - render nothing until redirected if not logged in
+  if (!user) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      {/* Header */}
+      <Header user={user} toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
+      
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar navigation */}
+        <SidebarNav 
+          isOpen={isSidebarOpen} 
+          currentPath={pathname}
+          isMobile={isMobile}
+          onClose={() => isMobile && setIsSidebarOpen(false)}
+        />
+        
+        {/* Main content */}
+        <main className={`flex-1 transition-all duration-300 overflow-y-auto ${isSidebarOpen ? 'md:ml-64' : 'ml-0'}`}>
+          <div className="container mx-auto px-4 py-6 max-w-7xl">
+            {children}
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
